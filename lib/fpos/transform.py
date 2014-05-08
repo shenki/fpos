@@ -20,8 +20,12 @@ import argparse
 import csv
 import sys
 from datetime import datetime
+import time
+import calendar
 from .core import money
 from .core import date_fmt
+
+months = [calendar.month_abbr[i] for i in range(1, 13)]
 
 transform_choices = sorted([ "anz", "commbank", "stgeorge", "nab" ])
 cmd_description = \
@@ -61,7 +65,27 @@ def transform_stgeorge(csv):
     next(csv)
     def _gen():
         for l in csv:
-            yield [ l[0], money((-1.0 * float(l[2])) if l[2] else float(l[3])), l[1] ]
+            date = l[0]
+            amount = money((-1.0 * float(l[2])) if l[2] else float(l[3]))
+            description = l[1]
+            for chunk in description.split():
+                if months.count(chunk[2:5]) != 1:
+                    continue
+                if len(chunk) == 5:
+                    new_time = time.strptime(chunk, "%d%b")
+                elif len(chunk) == 10:
+                    new_time = time.strptime(chunk, "%d%b%H:%M")
+                else:
+                    continue
+                # Handle dates around new years. Assume a correction of no
+                # more than 1 month
+                given_time = time.strptime(date, "%d/%m/%Y")
+                if abs(given_time.tm_mon - new_time.tm_mon) > 1:
+                    continue
+                new_date = time.strftime("%d/%m", new_time)
+                date = new_date + date[-5:]
+                description = description.replace(chunk, "", 1)
+            yield [date, amount, description]
     return _gen()
 
 _nab_date_fmt = "%d-%b-%y"
