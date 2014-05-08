@@ -85,8 +85,10 @@ def name():
 def parse_args(subparser=None):
     parser_init = subparser.add_parser if subparser else argparse.ArgumentParser
     parser = parser_init(name(), description=cmd_description, help=cmd_help)
+    form_str = "The CSV schema used by the input file, named after " \
+            "associated banks. Options are: %s" % ' '.join(transform_choices)
     parser.add_argument("form", metavar="FORM", choices=transform_choices,
-            help="The CSV schema used by the input file, named after associated banks")
+            help=form_str)
     parser.add_argument("infile", metavar="INPUT", type=argparse.FileType('r'), default=sys.stdin,
             help="The source file whose contents should be transformed to fpos IR")
     parser.add_argument("outfile", metavar="OUTPUT", type=argparse.FileType('w'), default=sys.stdout,
