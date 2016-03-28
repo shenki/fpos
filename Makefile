@@ -18,7 +18,7 @@ install-user: install
 
 check:
 	$(PYTHON) setup.py $@ $(SETUP_FLAGS)
-	nosetests
+	nosetests3
 
 upload:
 	$(PYTHON) setup.py $@ $(SETUP_FLAGS)
